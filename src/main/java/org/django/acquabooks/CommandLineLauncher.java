@@ -1,15 +1,6 @@
 package org.django.acquabooks;
 
-import java.util.Date;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.Parser;
-import org.apache.commons.cli.PosixParser;
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,19 +16,20 @@ public class CommandLineLauncher {
    CommandLineLauncher cl=new CommandLineLauncher();
    if(args.length==0){
              HelpFormatter formatter = new HelpFormatter();
-             formatter.printHelp( "java -jar acquatorbida<VERSION>.jar -H <HOST> <command> ", CommandLineLauncher.getOptionsInstance() );
+             formatter.printHelp( "java -jar acquabooks<VERSION>.jar -H <HOST> <command> ", CommandLineLauncher.getOptionsInstance() );
              System.exit(1);
    }
-   
-    String host = "localhost";
+    
+
+   String host = "localhost";
     String port = "9200"; 
   
    try {
      CommandLine line = cl.getParser().parse( cl.getOptions(), args );
-     
+
      if(line.hasOption("h")){
        HelpFormatter formatter = new HelpFormatter();
-       formatter.printHelp( "java -jar acquatorbida<VERSION>.jar -H <HOST> <command> ", cl.getOptions() );
+       formatter.printHelp( "java -jar acquabooks<VERSION>.jar -H <HOST> <command> ", cl.getOptions() );
        System.exit(0);
      }
      
@@ -65,7 +57,10 @@ public class CommandLineLauncher {
      }else if(line.hasOption("u")){
         ImportManager m = new ImportManager(line.getOptionValue("u"), true, ElasticRESTClient.getInstance("http", host, port)); 
         m.run();
-     } 
+     }else if(line.hasOption("x")){
+        ExtractionManager m = new ExtractionManager(ElasticRESTClient.getInstance("http", host, port), line.getOptionValue("x"));
+        m.run();
+     }
    } catch (ParseException e1) {
       System.out.println(e1.getMessage());
    
@@ -75,7 +70,7 @@ public class CommandLineLauncher {
 
 
  public static Options getOptionsInstance(){
-    PosixParser parser = new PosixParser();
+    DefaultParser parser = new DefaultParser();
     // create the Options
 
     Options options = new Options();
@@ -95,9 +90,18 @@ public class CommandLineLauncher {
         .argName("PORT")
         .longOpt("port").build() );
  
-    OptionGroup optionGroup = new OptionGroup(); 
-     
-    optionGroup.addOption( Option.builder( "s" )
+    OptionGroup optionGroup = new OptionGroup();
+     optionGroup.addOption( Option.builder( "x" )
+        .desc( "Export: it extract data ad save to a single file in the current directory" +
+                " the argument accept the type of export [more info will arrive]")
+        .required(false)
+        .hasArg()
+        .argName("TYPE_OF_EXPORT")
+        .longOpt("extract").build() );
+
+
+
+     optionGroup.addOption( Option.builder( "s" )
         .desc( "Selling mode")
         .required(false)
         .build());
