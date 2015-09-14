@@ -60,6 +60,15 @@ public class CommandLineLauncher {
      }else if(line.hasOption("x")){
         ExtractionManager m = new ExtractionManager(ElasticRESTClient.getInstance("http", host, port), line.getOptionValue("x"));
         m.run();
+     }else if(line.hasOption("cr")){
+        CrudManager m = new CrudManager(ElasticRESTClient.getInstance("http", host, port));
+        m.insert();
+     }else if(line.hasOption("up")){
+        CrudManager m = new CrudManager(ElasticRESTClient.getInstance("http", host, port));
+        m.update();
+     }else if(line.hasOption("del")){
+        CrudManager m = new CrudManager(ElasticRESTClient.getInstance("http", host, port));
+        m.delete();
      }
    } catch (ParseException e1) {
       System.out.println(e1.getMessage());
@@ -101,16 +110,28 @@ public class CommandLineLauncher {
 
 
 
-     optionGroup.addOption( Option.builder( "s" )
-        .desc( "Selling mode")
+     optionGroup.addOption( Option.builder("s")
+        .desc("Selling mode")
         .required(false)
         .build());
     
-    optionGroup.addOption( Option.builder( "d" )
-        .desc( "Detail mode")
+    optionGroup.addOption( Option.builder("d")
+        .desc("Detail mode")
         .required(false)
         .build());
-     
+     optionGroup.addOption( Option.builder("cr")
+        .desc("Create new")
+        .required(false)
+        .build());
+     optionGroup.addOption( Option.builder( "up" )
+        .desc( "Update a book")
+        .required(false)
+        .build());
+     optionGroup.addOption( Option.builder( "del" )
+        .desc( "Delete book")
+        .required(false)
+        .build());
+
 
 
     optionGroup.addOption( Option.builder( "i" )

@@ -40,6 +40,7 @@ public  SellingManager(){
           Libro l = elclient.getDetail(in);
           if(l == null){
             logWarn("LIBRO NON TROVATO: "+in);
+              continue;
           }
          l.incrementaVenduto();
          boolean r = elclient.index(l);

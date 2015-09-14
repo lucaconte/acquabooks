@@ -94,7 +94,7 @@ public String toString() {
    * @return the prezzo
    */
   public Double getPrezzo() {
-          return prezzo;
+          return prezzo!=null?prezzo:-9999;
   }
 
   /**

@@ -1,8 +1,12 @@
 package org.django.acquabooks;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
+import com.google.gson.stream.JsonReader;
 import org.apache.commons.lang3.StringUtils;
 import org.django.acquabooks.pojos.Libro;
 import org.slf4j.Logger;
@@ -49,33 +53,77 @@ public class ImportManager {
   }
 
   public void run(){
-    String in = null;
-    try{
-      Scanner sc = new Scanner(fileIn);
-      int lineNumber = 0;
-      while (sc.hasNextLine()) {
-        in = sc.nextLine();
-        Gson gson = new Gson();
-        Libro lin = gson.fromJson(in,Libro.class);
-        lineNumber++;
-        if(!isEdit){
-          Libro l = elclient.getDetail(lin.getBarcode());
-          if(l != null){
-            logErr("FALLITO record di linea: " + lineNumber + " già presente!! Barcode: "+l.getBarcode());
-            continue;
-          } 
-        } 
-       
-        if(elclient.index(lin)){
-          logWarn("Indicizzato record di linea: " + lineNumber);
-        }else{
-          logErr("FALLITO record di linea: " + lineNumber);
-        }
+      JsonReader reader = null;
+      try {
+          Gson gson = new Gson();
+
+          reader = new JsonReader(new FileReader(fileIn));
+          reader.beginArray();
+          while (reader.hasNext()) {
+
+            Libro lin = new Libro();
+            reader.beginObject();
+               while (reader.hasNext()) {
+                String prop = reader.nextName();
+                 switch (prop){
+                    case "barcode":
+                        lin.setBarcode(reader.nextString());
+                        break;
+                    case "editore":
+                        lin.setEditore(reader.nextString());
+                        break;
+                    case "tag":
+                        lin.setTag(reader.nextString());
+                        break;
+                    case "autore":
+                        lin.setAutore(reader.nextString());
+                        break;
+                    case "titolo":
+                        lin.setTitolo(reader.nextString());
+                        break;
+                    case "prezzo":
+                        lin.setPrezzo(reader.nextDouble());
+                        break;
+                    case "percentuale":
+                        lin.setPercentuale(reader.nextDouble());
+                        break;
+                    case "qa":
+                        lin.setQa(((int) reader.nextLong()));
+                        break;
+                    case "qv":
+                        lin.setQv(((int) reader.nextLong()));
+                        break;
+                    default:
+                        reader.skipValue();
+                        break;
+                }
+               }
+            reader.endObject();
+            if(!isEdit){
+              Libro l = elclient.getDetail(lin.getBarcode());
+              if(l != null){
+                  logErr("FALLITO record già presente!! Barcode: "+l.getBarcode());
+                  continue;
+              }
+            }
+            if(elclient.index(lin)){
+                logWarn("Indicizzato record con barcode: " + lin.getBarcode());
+            }else{
+                logErr("FALLITO record con barcode: " + lin.getBarcode());
+            }
+          }
+          reader.endArray();
+      } catch (FileNotFoundException e) {
+          e.printStackTrace();
+      } catch (IOException e) {
+          e.printStackTrace();
+      }finally {
+          try {
+              reader.close();
+          } catch (IOException e) {
+              logger.error("Error on closing reader",e);
+          }
       }
-    } catch(Exception e){
-      logger.error(e.getMessage());
-      e.printStackTrace();
-    }
   }
 
   private void logWarn(String msg){
