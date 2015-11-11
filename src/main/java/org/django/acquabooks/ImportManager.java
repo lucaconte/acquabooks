@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Scanner;
 
 import com.google.gson.stream.JsonReader;
 import org.apache.commons.lang3.StringUtils;
+import org.django.acquabooks.io.Console;
 import org.django.acquabooks.pojos.Libro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,12 @@ import com.google.gson.Gson;
 public class ImportManager {
   public static int CONSOLE_ROW_LENGHT = 80;
 
+
+
+  public static int MODE_INSERT = 0;
+  public static int MODE_EDIT = 1;
+  public static int MODE_AZZERA_VENDUTO = 2;
+
   private static final Logger logger = LoggerFactory
                   .getLogger(CommandLineLauncher.class);
 
@@ -24,12 +32,12 @@ public class ImportManager {
 
   private File fileIn;
 
-  //una volta settato rimane il che impedisce alloggetto di essere
-  // un singleton usabile sia per gli inport che gli export, ritenuto che
+  // se MODE_EDIT una volta settato rimane, il  che impedisce all'oggetto di essere
+  // un singleton usabile sia per gli import che gli export, ritenuto che
   // non è in previsione una versione ad interfaccia grafica stile ncurses
   // o swing o altro, si è ritenuto che via command line "one shot" ogni azione
   // crea un nuovo oggetto e lo termina. 
-  private boolean isEdit;
+  private int mode;
 
   public ImportManager(String filename) {
           elclient = ElasticRESTClient.getInstance("http", "localhost", "9200");
@@ -42,14 +50,14 @@ public class ImportManager {
   public ImportManager(String filename,  ElasticRESTClient client){
     this.elclient = client;
     this.fileIn = new File(filename);
-    this.isEdit = false;
+    this.mode = MODE_INSERT;
   }
 
 
-  public ImportManager(String filename, boolean isEdit , ElasticRESTClient client){
+  public ImportManager(String filename, int mode , ElasticRESTClient client){
     this.elclient = client;
     this.fileIn = new File(filename);
-    this.isEdit = isEdit;
+    this.mode = mode;
   }
 
   public void run(){
@@ -93,23 +101,35 @@ public class ImportManager {
                     case "qv":
                         lin.setQv(((int) reader.nextLong()));
                         break;
+                    case "sconto":
+                        lin.setSconto(reader.nextDouble());
+                        break;
                     default:
                         reader.skipValue();
                         break;
                 }
                }
             reader.endObject();
-            if(!isEdit){
+            if(mode == MODE_INSERT || mode == MODE_AZZERA_VENDUTO){
               Libro l = elclient.getDetail(lin.getBarcode());
-              if(l != null){
+              if(l != null && MODE_INSERT == mode){
                   logErr("FALLITO record già presente!! Barcode: "+l.getBarcode());
                   continue;
               }
+              if(l == null && MODE_AZZERA_VENDUTO == mode){
+                  logErr("FALLITO libro NON presente!! Barcode: "+l.getBarcode());
+                  continue;
+              }else if(MODE_AZZERA_VENDUTO == mode){ //l !=null is implicit
+                  l.setQa(l.getQa() - l.getQv());
+                  l.setQv(0);
+                  lin = l;
+              }
+
             }
             if(elclient.index(lin)){
-                logWarn("Indicizzato record con barcode: " + lin.getBarcode());
+                Console.genericWarn("Indicizzato record con barcode: " + lin.getBarcode());
             }else{
-                logErr("FALLITO record con barcode: " + lin.getBarcode());
+                Console.genericErr("FALLITO record con barcode: " + lin.getBarcode());
             }
           }
           reader.endArray();

@@ -2,8 +2,7 @@ package org.django.acquabooks.pojos;
 
 import io.searchbox.annotations.JestId;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 
 public class Libro{
 
@@ -14,9 +13,11 @@ public class Libro{
   private String editore;
   private String tag;
   private Double prezzo;
+  private Double sconto;
   private Double percentuale;
   private Integer qa;
   private Integer qv;
+  private Long ultimoAggiornamento;
 
   
   /**
@@ -146,8 +147,32 @@ public String toString() {
           this.qv = qv;
   }
     
-  public void incrementaVenduto(){
-    this.setQv(this.getQv()+1);
+  public void incrementaVenduto(int amount){
+    this.setQv(this.getQv()+ amount);
+  }
+
+
+  public Double getSconto() {
+      if(sconto == null){
+          sconto = 0D;
+      }
+     return sconto;
+  }
+
+  public void setSconto(Double sconto) {
+      this.sconto = sconto;
+  }
+
+  public Double getPrezzoScontato(){
+      return getPrezzo() - (getPrezzo() * getSconto());
+  }
+
+  public Long getUltimoAggiornamento() {
+      return ultimoAggiornamento;
+  }
+
+  public void setUltimoAggiornamento(Long ultimoAggiornamento) {
+      this.ultimoAggiornamento = ultimoAggiornamento;
   }
 }
 

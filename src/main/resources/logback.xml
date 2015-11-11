@@ -11,7 +11,7 @@
     </layout>
   </appender>
 
-  <root level="debug">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
   </root>
 

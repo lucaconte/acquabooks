@@ -55,7 +55,10 @@ public class CommandLineLauncher {
         ImportManager m = new ImportManager(line.getOptionValue("i"),ElasticRESTClient.getInstance("http", host, port)); 
         m.run();
      }else if(line.hasOption("u")){
-        ImportManager m = new ImportManager(line.getOptionValue("u"), true, ElasticRESTClient.getInstance("http", host, port)); 
+        ImportManager m = new ImportManager(line.getOptionValue("u"), ImportManager.MODE_EDIT, ElasticRESTClient.getInstance("http", host, port));
+        m.run();
+     }else if(line.hasOption("z")){
+        ImportManager m = new ImportManager(line.getOptionValue("z"), ImportManager.MODE_AZZERA_VENDUTO, ElasticRESTClient.getInstance("http", host, port));
         m.run();
      }else if(line.hasOption("x")){
         ExtractionManager m = new ExtractionManager(ElasticRESTClient.getInstance("http", host, port), line.getOptionValue("x"));
@@ -102,7 +105,9 @@ public class CommandLineLauncher {
     OptionGroup optionGroup = new OptionGroup();
      optionGroup.addOption( Option.builder( "x" )
         .desc( "Export: it extract data ad save to a single file in the current directory" +
-                " the argument accept the type of export [more info will arrive]")
+                " the argument accept the type of export. L\'ultima opzione è excel|json e determina il formato di output\n" +
+                " \"-x T,json\" exports ALL data in json format\n" +
+                " \"-x E,pippo,excel\" esporta libri che metchano la parola pippo in tags o editore")
         .required(false)
         .hasArg()
         .argName("TYPE_OF_EXPORT")
@@ -147,7 +152,14 @@ public class CommandLineLauncher {
         .hasArg()
         .argName("FILE")
         .longOpt("update").build() );
-   
+
+   optionGroup.addOption( Option.builder( "z" )
+        .desc("update QA subtracting QV and reset QV.  A json file qith libro is accepted. The only barcod property is considered")
+        .required(false)
+        .hasArg()
+        .argName("FILE")
+        .longOpt("reset").build() );
+
     options.addOptionGroup(optionGroup); 
     return  options;
   }

@@ -82,6 +82,12 @@ public class ElasticRESTClient {
     }
 
   public Boolean index(Libro l) throws IOException {
+        return this.index(l,Boolean.TRUE);
+  }
+  public Boolean index(Libro l, Boolean updateDate) throws IOException {
+    if(updateDate) {
+     l.setUltimoAggiornamento(System.currentTimeMillis());
+    }
     Index index = new Index.Builder(l).index("acquatorbida").type("libro").build();
     JestResult r = client.execute(index);
     return r.isSucceeded();
