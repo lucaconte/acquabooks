@@ -119,9 +119,16 @@ public class ElasticRESTClient {
 
         String query = "{" +
                 "\"query\": {" +
-                     "\"match\": {" +
-                            "\"editore\":\""+publisher+"\""+
-                        "}" +
+                            "  \"multi_match\": {" +
+
+                                "\"query\":" +
+                                    "\"" + publisher +"\"," +
+                                "\"fields\":" +
+                                    "[ \"editore\", \"tag\" ]" +
+                "               }" +
+                //     "\"match\": {" +
+                //            "\"editore\":\""+publisher+"\""+
+                //        "}" +
                 "}" +
              "}";
 

@@ -44,7 +44,7 @@ public void setTag(String tag) {
   @Override
 public String toString() {
         return "Libro [barcode=" + barcode + ", editore=" + editore + ", titolo=" + titolo + ", autore="
-                        + autore + ", tag=" + tag + ", prezzo=" + prezzo
+                        + autore + ", tag=" + tag + ", prezzo=" + prezzo + ", sconto=" + prezzo
                         + ", percentuale=" + percentuale + ", qa=" + qa + ", qv=" + qv
                         + "]";
 }

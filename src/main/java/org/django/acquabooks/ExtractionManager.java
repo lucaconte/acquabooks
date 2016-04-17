@@ -14,6 +14,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.django.acquabooks.io.Console;
 import org.django.acquabooks.pojos.Libro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class ExtractionManager {
     public boolean run(){
         DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 
-        String filename = "./";
+        String filename = "";
         List<Libro> r = null;
         File fout = null;
         JsonWriter writer = null;
@@ -100,6 +101,7 @@ public class ExtractionManager {
                 fout.createNewFile();
                 manageExcelExtraction(fout, r);
             }
+                Console.genericWarn("Creato file: "+fout.getAbsolutePath());
                 } catch (Throwable e) {
                         logger.error("Error on extracting data: " + e.getMessage());
                         e.printStackTrace();
@@ -177,6 +179,7 @@ public class ExtractionManager {
 //              c.setCellFormula("SUM(J2:J+" + (rowCount-2) + ")");
 
             wb.write(fileOut);
+
           }catch(Exception e) {
             e.printStackTrace();
           }finally{
